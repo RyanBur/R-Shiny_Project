@@ -1,0 +1,52 @@
+**PROCESSED DATA INFORMATION**
+
+PublishedAt - Converted the character string in the raw dataset into a datetime object
+
+trending_date - Converted the character string in the raw dataset into a datetime object
+
+category_text - Used the information in the associated .json file to convert categoryId numbers to category descriptive text strings. This data is straight from Google.
+
+
+publish_to_trending_days - The amount of time, in days, between the publishing timestamp and midnight (one minute before 12:00AM) the day of the trending video record. A time of 0 indicates the video was published on the same day as the video hit the daily trending list.
+
+
+===================================================================================
+**RAW DATA INFORMATION**
+Link to data: https://www.kaggle.com/rsrishav/youtube-trending-video-dataset?select=US_youtube_trending_data.csv
+Description of YouTube top trending videos (from Variety Magazine): "To determine the year's top-trending videos, YouTube uses a combination of factors including measuring users interactions (number of views, shares, comments, and likes). Note that they're not the most-viewed videos overall for the calendar year."
+
+Dataset includes the daily trending YouTube videos for 8/11/20 - 6/2/21, spanning almost 10 months. It is for the USA, with up to 200 listed trending videos per day. This dataset was collected using the YouTube API
+
+------------------------------------------------------------------------------------
+Features:
+video_id - A unique ID for each video on YouTube
+
+publishedAt - Date and Timestamp for when the video was uploaded to Youtube
+
+channelid - Unique ID for the channel (aka user) who posted the video
+
+channelTitle - The user-chosen title for each channel
+
+categoryId - An integer value, associated with a text tag in a separate .json file, for what broad category a video falls into. (confirmed it is video-level, not channel-level).
+
+trending_date - The date for this record of a video being on the daily top trending list. A video can have multiple entries into the database, where each entry has a different trending_date
+
+tags - User-created tags to help the video appear in relevant searches on YouTube. Should be representative of the content of the video. From Google's website: "Tags are descriptive keywords you can add to your video to help viewers find your content. Your video’s title, thumbnail, and description are more important pieces of metadata for your video’s discovery. These main pieces of information help viewers decide which videos to watch. 
+Tags can be useful if the content of your video is commonly misspelled. Otherwise, tags play a minimal role in your video's discovery. Note: Adding excessive tags to your video description is against our policies on spam, deceptive practices, and scams."
+
+view_count - Total view count of the video as of the trending_date
+
+likes - Total like received by a video as of the trending_date
+
+dislikes - Total dislikes received by a video as of the trending_date
+
+comment_count - Total number of comments received by a video as of the trending_date
+
+thumbnail - hyperlink to the thumbnail image for the video as seen on YouTube
+
+comments_disabled - Boolean for whether or not the posting user disabled comments on a video
+
+ratings_disabled - Disables the likes and dislikes counts for a video. Can be set by the user posting te video.
+
+description - User-inputted free-form text assosciated with a video. Supposed to be a text description of the video, but often used for promotional purposes by the user posting the video.
+---------------------------------------------------------------------------------

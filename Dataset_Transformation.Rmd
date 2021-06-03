@@ -1,0 +1,49 @@
+---
+title: "R-Shiny Dataset Transformation"
+output: html_notebook
+---
+
+
+Importing the libraries I will need and the data I will be manipulating
+```{r}
+library(dplyr)
+library(jsonlite)
+```
+```{r}
+data = read.csv('data\\US_youtube_trending_data.csv', header=TRUE, )
+categories_data = fromJSON('data\\US_category_id.json', flatten=TRUE)
+```
+
+Creating a dataframe with the text version of the categories information for my use.
+```{r}
+categories_df = data.frame(categories_data$items)
+categories_df = categories_df %>% select(number=id, category_text=snippet.title)
+categories_df$number = as.integer(categories_df$number)
+```
+Combine this category text with my orignial dataframe
+
+```{r}
+data
+```
+
+
+```{r}
+data = data %>% merge(categories_df, by.x='categoryId', by.y='number') %>% arrange(trending_date)
+```
+I have only changed one data field, and there are many to go still.
+
+
+Convert the published and trending datetimes to actual datetimes from characters. 
+```{r}
+data$publishedAt = data$publishedAt %>% strptime('%Y-%m-%dT%H:%M:%S', tz='UTC')
+data$trending_date = data$trending_date %>% strptime('%Y-%m-%dT%H:%M:%S', tz='UTC')
+```
+
+```{r}
+data %>% mutate(publish_to_trending_days = round(ifelse((trending_date - publishedAt)>0,difftime(trending_date, publishedAt, units='days'),as.difftime(0,units='days')),2))
+```
+
+
+
+
+
