@@ -1,0 +1,97 @@
+---
+title: "Exploratory Data Analysis"
+#output: html_notebook
+---
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+This notebook will focus on Exploratory Data Analysis to help understand my data more and see emerging areas of trends and relationships. 
+Load in the processed data:
+```{r}
+data = read.csv('data\\Youtube_Working_Dataset.csv', header=TRUE)
+data
+```
+How many videos per day made the trending list?
+```{r}
+# Quick summary of the number of rows per trending day
+summary(data %>% count(trending_date))
+
+# Shows the number of trending days that had each count of row numbers.
+data %>% count(trending_date) %>% count(n)
+```
+Almost all the days covered by the dataset (272 / 283) had 200 entries for that day. The 199 and 197 entry days are close enough to leave as-is, but the days with 400 entries lead me to believe these days were double-entered into the database. If the distinct rows in the dataset is 4*(400-200) = 800 shorter than the dataset itself, I will be pretty sure this is true. 
+```{r}
+dim(data)[1] - dim(distinct(data))[1]
+```
+This does not appear to be the case, entries are not being repeated in a systematic manner, so I will leave the dataset as-is. If the analysis was more in-depth and had greater time I would investigate this further by looking into the specifics of the days that had 400 entries.
+
+Conclusion is that majority of days have 200 trending entries per day, with a few having just under and a few having double.
+
+How many different videos made the list altogether?
+```{r}
+unique_vids = dim(distinct(data, video_id))[1]
+unique_vids
+```
+9,954 different videos made the top daily trending videos list in the 283 days covered by the data.
+```{r}
+dim(data)[1] / unique_vids
+```
+This means that on average, a video that made the trending list spent 5.77 days trending in the last 283 days.
+
+
+Now, how many videos were repeat trenders?
+```{r}
+data %>% count(video_id) %>% arrange(desc(n)) %>% filter(n>1)
+unique_vids - dim(data %>% count(video_id) %>% arrange(desc(n)) %>% filter(n>1))[1]
+
+```
+According to this quick analysis, there are only 249 out of 9,954 videos that made the top daily trending list only once. That in itself is both very surprising and not that surprising... If a video makes the trending list on a day it is very likely to make it again.
+
+Plot the frequency of trending days. I want to see what is a common amount of time to trend for. 
+```{r}
+trend_days_count = data %>% count(video_id) %>% arrange(desc(n))
+trend_days_proportions = data %>% count(video_id) %>% count(n) %>% mutate(proportion=round(nn/unique_vids,3)) %>% select(n, proportion) 
+
+trend_days_proportions %>% ggplot() + geom_col(aes(x=n, y=proportion))
+cat('Standard Deviation of days trending:', sd(trend_days_count$n), '\n')
+cat('Mean days trending:', mean(trend_days_count$n), '\n')
+cat('Median days trending:', median(trend_days_count$n), '\n')
+cat('Max days trending:', max(trend_days_count$n), '\n')
+```
+Different line of questioning: How many creators got multiple videos on the trending list in the 283-day period?
+```{r}
+vids_per_creator = data %>% group_by(channelId) %>% 
+    summarise(number_trending_videos=n_distinct(video_id))
+creator_count = dim(vids_per_creator)[1]
+cat('Number of creators who made the top daily trending list in 283 days:', creator_count, '\n')
+cat('Number of creators who had more than one video make the top trending list:',
+    dim(vids_per_creator[vids_per_creator$number_trending_videos > 1,])[1], '\n')
+cat('Average videos per creator on list:', mean(vids_per_creator$number_trending_videos), '\n')
+cat('Median videos per creator on list:', median(vids_per_creator$number_trending_videos), '\n')
+
+vids_per_creator %>% ggplot() + geom_bar(aes(x=number_trending_videos))
+```
+About half of all creators who made the list only had 1 video make the top daily trending list during this time period.
+The data is very skewed, with a small number of creators having 10+ videos that made the trending list.
+
+min, max, and box plots for view count, likes, dislikes, and comments:
+```{r}
+cat('Minimum view count:', min(data$view_count), '\n')
+cat('Maximum view count:', max(data$view_count), '\n')
+cat('Average view_count:', mean(data$view_count), '\n')
+
+ggplot(data) + geom_boxplot(aes(y=view_count)) + coord_cartesian(ylim=c(0,6000000))
+```
+```{r}
+data %>% filter(view_count==0)
+```
+
+
+
+
+
+
+
+

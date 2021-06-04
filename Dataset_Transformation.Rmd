@@ -1,6 +1,6 @@
 ---
 title: "R-Shiny Dataset Transformation"
-output: html_notebook
+#output: html_notebook
 ---
 
 
@@ -39,9 +39,19 @@ data$publishedAt = data$publishedAt %>% strptime('%Y-%m-%dT%H:%M:%S', tz='UTC')
 data$trending_date = data$trending_date %>% strptime('%Y-%m-%dT%H:%M:%S', tz='UTC')
 ```
 
+Add a column that stores the time between publish and the trending record date.
 ```{r}
-data %>% mutate(publish_to_trending_days = round(ifelse((trending_date - publishedAt)>0,difftime(trending_date, publishedAt, units='days'),as.difftime(0,units='days')),2))
+data = data %>% mutate(publish_to_trending_days = round(ifelse((trending_date - publishedAt)>0,difftime(trending_date, publishedAt, units='days'),as.difftime(0,units='days')),2))
 ```
+Rearrange my columns and get rid of a few I won't use at all (categoryId, thumbnail_link, description):
+```{r}
+data = data %>% select(video_id, title, channelId, channelTitle, publishedAt, trending_date, publish_to_trending_days, category_text, tags, view_count, likes, dislikes, comment_count, comments_disabled, ratings_disabled)
+```
+save my data as my working dataset.
+```{r}
+write.csv(data, 'data\\Youtube_Working_Dataset.csv', row.names=FALSE)
+```
+
 
 
 
