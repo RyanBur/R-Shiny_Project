@@ -20,7 +20,7 @@ categories_df = data.frame(categories_data$items)
 categories_df = categories_df %>% select(number=id, category_text=snippet.title)
 categories_df$number = as.integer(categories_df$number)
 ```
-Combine this category text with my orignial dataframe
+Combine this category text with my original dataframe
 
 ```{r}
 data
@@ -47,6 +47,28 @@ Rearrange my columns and get rid of a few I won't use at all (categoryId, thumbn
 ```{r}
 data = data %>% select(video_id, title, channelId, channelTitle, publishedAt, trending_date, publish_to_trending_days, category_text, tags, view_count, likes, dislikes, comment_count, comments_disabled, ratings_disabled)
 ```
+
+26 strange records with 0 views, loooks like google-promoted content that shouldn't really be on the list.
+```{r}
+data = data %>% filter(view_count!=0)
+```
+
+Convert the ratings_disabled and comments_disabled into boolean values.
+```{r}
+# First, check the only character values are True and False
+unique(data$comments_disabled)
+unique(data$ratings_disabled)
+
+```
+```{r}
+# Now convert the columns
+data$comments_disabled = as.logical(data$comments_disabled)
+data$ratings_disabled = as.logical(data$ratings_disabled)
+```
+
+
+
+
 save my data as my working dataset.
 ```{r}
 write.csv(data, 'data\\Youtube_Working_Dataset.csv', row.names=FALSE)

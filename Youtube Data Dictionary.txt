@@ -46,7 +46,40 @@ thumbnail - hyperlink to the thumbnail image for the video as seen on YouTube
 
 comments_disabled - Boolean for whether or not the posting user disabled comments on a video
 
-ratings_disabled - Disables the likes and dislikes counts for a video. Can be set by the user posting te video.
+ratings_disabled - Disables the likes and dislikes counts for a video. Can be set by the user posting the video.
 
 description - User-inputted free-form text assosciated with a video. Supposed to be a text description of the video, but often used for promotional purposes by the user posting the video.
+
+
+
 ---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Full background from YouTube itself on what the trending list is:
+---------------------------------------------------------------------------------
+Trending on YouTube
+Trending helps viewers see what’s happening on YouTube and in the world. Trending aims to surface videos that a wide range of viewers would find interesting. Some trends are predictable, like a new song from a popular artist or a new movie trailer. Others are surprising, like a viral video.
+
+Trending isn't personalized and displays the same list of trending videos in each country to all users, which is why you may see videos in Trending that aren’t in the same language as your browser. However, in India, Trending displays the same list of trending videos for each of the 9 most common Indic languages.
+
+The list of trending videos is updated roughly every 15 minutes. With each update, videos may move up, down, or stay in the same position in the list.
+
+What determines if a video is ranked on Trending?
+Amongst the many great new videos on YouTube on any given day, Trending can only show a limited number. Trending aims to surface videos that:
+
+Are appealing to a wide range of viewers
+Are not misleading, clickbaity or sensational
+Capture the breadth of what’s happening on YouTube and in the world
+Showcase a diversity of creators
+Ideally, are surprising or novel
+Trending aims to balance all of these considerations. To achieve this, Trending considers many signals, including (but not limited to):
+
+View count
+How quickly the video is generating views (i.e. “temperature”)
+Where views are coming from, including outside of YouTube
+The age of the video
+How the video performs compared to other recent uploads from the same channel
+We combine these signals to produce a list of videos that showcases what’s happening on YouTube, while being relevant to our viewers and reflective of the content on the platform. This means that the video with the highest view count on a given day may not be #1 on Trending, and videos with more views may be shown below videos with fewer views.
+
+We're very careful about the safety of what appears on Trending, so we have filters to make sure we don’t show videos that contain excessive profanity, mature content, or violence, or videos that are otherwise inappropriate, such as disparaging others in the community. In the US and other locales, we have staff involved as a final filter to ensure safety and appropriateness.
+
+YouTube doesn't accept payment for placement on Trending and doesn't favor specific creators. We don't include views from YouTube ads in selecting videos for Trending. In most major markets, we make sure that at least half the videos on trending come from creators who are primarily creating content for YouTube.

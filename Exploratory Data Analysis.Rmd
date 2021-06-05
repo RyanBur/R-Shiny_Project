@@ -76,17 +76,134 @@ vids_per_creator %>% ggplot() + geom_bar(aes(x=number_trending_videos))
 About half of all creators who made the list only had 1 video make the top daily trending list during this time period.
 The data is very skewed, with a small number of creators having 10+ videos that made the trending list.
 
-min, max, and box plots for view count, likes, dislikes, and comments:
+min, max, and histograms for view count, likes, dislikes, and comments:
+For View Count:
 ```{r}
 cat('Minimum view count:', min(data$view_count), '\n')
 cat('Maximum view count:', max(data$view_count), '\n')
 cat('Average view_count:', mean(data$view_count), '\n')
 
-ggplot(data) + geom_boxplot(aes(y=view_count)) + coord_cartesian(ylim=c(0,6000000))
+summary(data$view_count)
+
+# Shows the frequency of view count ranges over most of the rows
+ggplot(data) + geom_histogram(aes(x=view_count), bins=1500) + coord_cartesian(xlim=c(0,15000000))
+
+# Shows  the frequency of view count ranges over the meat of the curve
+ggplot(data) + geom_histogram(aes(x=view_count), bins=6000) + coord_cartesian(xlim=c(0,3000000))
+
+# Shows the log-views distribution
+ggplot(data) + geom_histogram(aes(x=log(view_count)), bins=100) 
+
+ggplot(data) + geom_histogram(aes(x=log(view_count, base=10)), bins=100) 
+
 ```
+
+For Likes:
 ```{r}
-data %>% filter(view_count==0)
+# Inspect the number of ratings disabled
+data %>% group_by(ratings_disabled) %>% summarise(total=n())
+# These show that getting rid of the disabled ones reduces the row count by 300 for ratings, not that significant.
+
+data_with_ratings = data %>% filter(ratings_disabled==FALSE)
+
+
+
+cat('Minimum likes:', min(data_with_ratings$likes), '\n')
+cat('Maximum likes:', max(data_with_ratings$likes), '\n')
+cat('Average likes:', mean(data_with_ratings$likes), '\n')
+
+summary(data_with_ratings$likes)
+
+# Shows the frequency of likes ranges over most of the rows
+ggplot(data_with_ratings) + geom_histogram(aes(x=likes), bins=1500) + coord_cartesian(xlim=c(0,2000000))
+
+# Shows  the frequency of likes ranges over the meat of the curve
+ggplot(data_with_ratings) + geom_histogram(aes(x=likes), bins=6000) + coord_cartesian(xlim=c(0,300000))
+
+# Shows the log-likes distribution
+ggplot(data_with_ratings) + geom_histogram(aes(x=log(likes)), bins=100) 
+
+ggplot(data_with_ratings) + geom_histogram(aes(x=log(likes, base=10)), bins=100) 
+
 ```
+
+For dislikes
+```{r}
+# Inspect the number of ratings disabled
+data %>% group_by(ratings_disabled) %>% summarise(total=n())
+# These show that getting rid of the disabled ones reduces the row count by 300 for ratings, not that significant.
+
+data_with_ratings = data %>% filter(ratings_disabled==FALSE)
+
+
+
+cat('Minimum dislikes:', min(data_with_ratings$dislikes), '\n')
+cat('Maximum dislikes:', max(data_with_ratings$dislikes), '\n')
+cat('Average dislikes:', mean(data_with_ratings$dislikes), '\n')
+
+summary(data_with_ratings$dislikes)
+
+# Shows the frequency of dislikes ranges over most of the rows
+ggplot(data_with_ratings) + geom_histogram(aes(x=dislikes), bins=1500) +  coord_cartesian(xlim=c(0,50000))
+
+# Shows  the frequency of dislikes ranges over the meat of the curve
+ggplot(data_with_ratings) + geom_histogram(aes(x=dislikes), bins=10000) + coord_cartesian(xlim=c(0,5000))
+
+# Shows the log-dislikes distribution
+ggplot(data_with_ratings) + geom_histogram(aes(x=log(dislikes)), bins=100) 
+
+ggplot(data_with_ratings) + geom_histogram(aes(x=log(dislikes, base=10)), bins=100) 
+
+```
+
+For comment_count
+```{r}
+# Inspect the number of comments disabled
+data %>% group_by(comments_disabled) %>% summarise(total=n())
+# These show that getting rid of the disabled ones reduces the row count by 1200 for ratings, not that significant.
+
+data_with_comments = data %>% filter(comments_disabled==FALSE)
+
+
+
+cat('Minimum comments:', min(data_with_comments$comment_count), '\n')
+cat('Maximum comments:', max(data_with_comments$comment_count), '\n')
+cat('Average comments:', mean(data_with_comments$comment_count), '\n')
+
+summary(data_with_comments$comment_count)
+
+# Shows the frequency of comments count ranges over most of the rows
+ggplot(data_with_comments) + geom_histogram(aes(x=comment_count), bins=10000) +  coord_cartesian(xlim=c(0,75000))
+
+# Shows  the frequency of comments count ranges over the meat of the curve
+ggplot(data_with_comments) + geom_histogram(aes(x=comment_count), bins=20000) + coord_cartesian(xlim=c(0,20000))
+
+# Shows the log-comment count distribution
+ggplot(data_with_comments) + geom_histogram(aes(x=log(comment_count)), bins=100) 
+
+ggplot(data_with_comments) + geom_histogram(aes(x=log(comment_count, base=10)), bins=100) 
+
+```
+
+
+Now, looking into the likes/dislikes relationship:
+First, I will plot the two as a scatterplot to look for a relationship.
+```{r}
+# Looks like a few videos with large amounts of each are compressing the rest of the data.
+ggplot(data_with_ratings) + geom_point(aes(x=likes, y=dislikes), alpha=0.1)
+
+# Zooming in to see what the meat of the data looks like.
+ggplot(data_with_ratings) + geom_point(aes(x=likes, y=dislikes), alpha=0.01) + coord_cartesian(xlim=c(0,300000), ylim=c(0,25000))
+
+# Trying to fit a line to the data, even though it doesnt look linear.
+ggplot(data_with_ratings, aes(x=likes, y=dislikes)) + geom_point(alpha=0.01) + coord_cartesian(xlim=c(0,300000), ylim=c(0,25000)) + geom_smooth(method=lm)
+
+# Zoomed in further, looks even less linear. .
+ggplot(data_with_ratings, aes(x=likes, y=dislikes)) + geom_point(alpha=0.05) + coord_cartesian(xlim=c(0,50000), ylim=c(0,3000)) + geom_smooth(method=lm)
+```
+Clearly from the graphs, the number of dislikes does not have a strong linear relationship with the number of likes. This means that different videos are different in how much polarization they evoke in the viewership.
+
+
 
 
 
