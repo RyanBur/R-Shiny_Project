@@ -10,7 +10,7 @@ library(dplyr)
 library(jsonlite)
 ```
 ```{r}
-data = read.csv('data\\US_youtube_trending_data.csv', header=TRUE, )
+data = read.csv('data\\US_youtube_trending_data.csv', header=TRUE)
 categories_data = fromJSON('data\\US_category_id.json', flatten=TRUE)
 ```
 
@@ -91,7 +91,17 @@ write.csv(data_clean, 'data\\Youtube_Working_Dataset.csv', row.names=FALSE)
 ```
 
 
+Dataset was reworked in Python to get a top_tags column.
+Details are in the jupyter notebook for this project
 
 
+Dataset was re-imported, and the columns that are supposed to be logical values wre re-processed. They didnt come through before, Not sure why. 
+
+```{r}
+data_NEW = read.csv('data\\Youtube_Working_Dataset_NEW.csv', header=TRUE)
+data_NEW$comments_disabled = as.logical(data_NEW$comments_disabled)
+data_NEW$ratings_disabled = as.logical(data_NEW$ratings_disabled)
+write.csv(data_NEW, 'data\\Youtube_Working_Dataset_NEW.csv', row.names=FALSE)
+```
 
 

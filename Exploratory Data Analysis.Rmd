@@ -5,12 +5,13 @@ title: "Exploratory Data Analysis"
 ```{r}
 library(dplyr)
 library(ggplot2)
+library(stringr)
 ```
 
 This notebook will focus on Exploratory Data Analysis to help understand my data more and see emerging areas of trends and relationships. 
 Load in the processed data:
 ```{r}
-data = read.csv('data\\Youtube_Working_Dataset.csv', header=TRUE)
+data = read.csv('data\\Youtube_Working_Dataset_NEW.csv', header=TRUE)
 data
 ```
 How many videos per day made the trending list?
@@ -103,6 +104,7 @@ data %>% group_by(ratings_disabled) %>% summarise(total=n())
 # These show that getting rid of the disabled ones reduces the row count by 300 for ratings, not that significant.
 
 data_with_ratings = data %>% filter(ratings_disabled==FALSE)
+data_with_ratings
 
 
 
@@ -218,6 +220,144 @@ data %>% group_by(video_id) %>% summarise(first_day = min(trending_date),
     ggplot() + geom_histogram(aes(x=consecutive_ratio), bins=12) +coord_cartesian(xlim=c(0,1))
 ```
 From this graph, it is clear to see that the vast majority of the videos that trend for multiple days do so consecutively, or nearly consecutively. I think the majority of my analysis should be done on just the first time a video trends, since that is the real cutoff point. Doing most of the analysis on the full data set would lead to overrepresentation of multi-trenders. 
+
+
+Now, analyzing the title. I will do work for title length, title word count, title punctuation, title proportion caps, title w/ open/close parenthesis, maybe grouped by days on list (or above avg / below avg days)?
+
+Title Length:
+```{r}
+data %>% mutate(title_length=nchar(title)) %>% 
+    ggplot() + geom_histogram(aes(x=title_length), bins=36)
+
+data %>% mutate(title_length=nchar(title)) %>% summarise(longest_title=max(title_length), shortest_title=min(title_length))
+
+
+data %>% mutate(title_length=nchar(title)) %>% summarise(median_title_length=median(title_length), avg_title_length=mean(title_length), stdev_title_length=sd(title_length))
+```
+
+Title Word Count:
+```{r}
+
+
+word_count = function(string) {
+    return(length(strsplit(string, ' ')[[1]]))
+}
+
+title_words = sapply(data$title, 'word_count', USE.NAMES = FALSE)
+
+data %>% mutate(title_word_count=sapply(title, 'word_count', USE.NAMES = FALSE)) %>%
+    ggplot() + geom_density(aes(x=title_word_count, fill='word_density'), adjust=1.7, alpha=.3)
+
+
+data %>% mutate(title_word_count=sapply(title, 'word_count', USE.NAMES = FALSE)) %>% summarise(median_title_words=median(title_word_count), avg_title_words=mean(title_word_count), stdev_title_words=sd(title_word_count))
+```
+
+Title Proportion Capital Letters:
+```{r}
+title_caps_ratio = data %>% transmute(title_caps_ratio = str_count(title, "[A-Z]") / 
+                    (str_count(title, "[A-Z]") + str_count(title, "[a-z]")))
+summary(title_caps_ratio)
+
+data %>% mutate(title_caps_ratio = str_count(title, "[A-Z]") / 
+                    (str_count(title, "[A-Z]") + str_count(title, "[a-z]"))) %>% 
+    ggplot() + geom_histogram(aes(x=title_caps_ratio), bins=20)
+# Average novel has 3-5%, average word in english is 5.1 characters which would be on average .196 if each first letter was capitalized.
+
+```
+
+
+
+
+
+Moving on from title, I really need to get cracking here.
+ChannelId is the next field up. I will do the same analysis for it as for title.
+
+
+Channel Length:
+```{r}
+data %>% mutate(channel_length=nchar(channelTitle)) %>% 
+    ggplot() + geom_histogram(aes(x=channel_length), bins=20)
+data %>% mutate(channel_length=nchar(channelTitle)) %>% summarise(longest_channel=max(channel_length), shortest_channel=min(channel_length))
+
+
+data %>% mutate(channel_length=nchar(channelTitle)) %>% summarise(median_channel_length=median(channel_length), avg_channel_length=mean(channel_length), stdev_channel_length=sd(channel_length))
+
+
+data %>% mutate(channel_length=nchar(channelTitle)) %>% 
+ggplot() + geom_density(aes(x=channel_length, fill='word_density'), adjust=2, alpha=.3)
+```
+
+Channel Word Count:
+```{r}
+
+
+word_count = function(string) {
+    return(length(strsplit(string, ' ')[[1]]))
+}
+
+channel_words = sapply(data$channelTitle, 'word_count', USE.NAMES = FALSE)
+
+data %>% mutate(channel_word_count=sapply(channelTitle, 'word_count', USE.NAMES = FALSE)) %>%
+    ggplot() + geom_bar(aes(x=channel_word_count)) 
+
+
+data %>% mutate(channel_word_count=sapply(channelTitle, 'word_count', USE.NAMES = FALSE)) %>% summarise(median_channel_words=median(channel_word_count), avg_channel_words=mean(channel_word_count), stdev_channel_words=sd(channel_word_count))
+```
+
+
+Moving on to Category:
+Will look at category proportions, category vs. views, and category vs comments. This is one of the only data fields broad enough to pull meaningful info from views/comments.
+
+```{r}
+ggplot(data) + geom_bar(aes(x=reorder(category_text, category_text, function(x) length(x)))) + coord_flip()
+```
+
+Now, category by average likes:
+```{r}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
