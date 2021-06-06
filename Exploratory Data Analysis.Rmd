@@ -21,24 +21,22 @@ summary(data %>% count(trending_date))
 # Shows the number of trending days that had each count of row numbers.
 data %>% count(trending_date) %>% count(n)
 ```
-Almost all the days covered by the dataset (272 / 283) had 200 entries for that day. The 199 and 197 entry days are close enough to leave as-is, but the days with 400 entries lead me to believe these days were double-entered into the database. If the distinct rows in the dataset is 4*(400-200) = 800 shorter than the dataset itself, I will be pretty sure this is true. 
+Almost all the days covered by the dataset had 199 or 200 entries for that day. The 199 and 197 entry days are close enough to leave as-is, and I fixed the issue of a few days that had 400.
+
 ```{r}
 dim(data)[1] - dim(distinct(data))[1]
 ```
-This does not appear to be the case, entries are not being repeated in a systematic manner, so I will leave the dataset as-is. If the analysis was more in-depth and had greater time I would investigate this further by looking into the specifics of the days that had 400 entries.
-
-Conclusion is that majority of days have 200 trending entries per day, with a few having just under and a few having double.
 
 How many different videos made the list altogether?
 ```{r}
 unique_vids = dim(distinct(data, video_id))[1]
 unique_vids
 ```
-9,954 different videos made the top daily trending videos list in the 283 days covered by the data.
+9,835 different videos made the top daily trending videos list in the 280 days covered by the data.
 ```{r}
 dim(data)[1] / unique_vids
 ```
-This means that on average, a video that made the trending list spent 5.77 days trending in the last 283 days.
+This means that on average, a video that made the trending list spent 5.69 days trending in the last 280 days.
 
 
 Now, how many videos were repeat trenders?
@@ -47,7 +45,7 @@ data %>% count(video_id) %>% arrange(desc(n)) %>% filter(n>1)
 unique_vids - dim(data %>% count(video_id) %>% arrange(desc(n)) %>% filter(n>1))[1]
 
 ```
-According to this quick analysis, there are only 249 out of 9,954 videos that made the top daily trending list only once. That in itself is both very surprising and not that surprising... If a video makes the trending list on a day it is very likely to make it again.
+According to this quick analysis, there are only 376 out of 9,835 videos that made the top daily trending list only once. That in itself is both very surprising and not that surprising... If a video makes the trending list on a day it is very likely to make it again.
 
 Plot the frequency of trending days. I want to see what is a common amount of time to trend for. 
 ```{r}
@@ -60,7 +58,7 @@ cat('Mean days trending:', mean(trend_days_count$n), '\n')
 cat('Median days trending:', median(trend_days_count$n), '\n')
 cat('Max days trending:', max(trend_days_count$n), '\n')
 ```
-Different line of questioning: How many creators got multiple videos on the trending list in the 283-day period?
+Different line of questioning: How many creators got multiple videos on the trending list in the 280-day period?
 ```{r}
 vids_per_creator = data %>% group_by(channelId) %>% 
     summarise(number_trending_videos=n_distinct(video_id))
@@ -203,8 +201,23 @@ ggplot(data_with_ratings, aes(x=likes, y=dislikes)) + geom_point(alpha=0.05) + c
 ```
 Clearly from the graphs, the number of dislikes does not have a strong linear relationship with the number of likes. This means that different videos are different in how much polarization they evoke in the viewership.
 
+**OH NO** Something is wrong with my data. I need to figure out where extra records are coming from.
+UPDATE: Figured out where the extra lines were coming from with the above analysis. I need to clean my data more, and will send the above code to the transformation RNotebook to do this. Completed.
 
 
+
+Before we go any further, I need to decide whether to cut my dataset out for the first appearance of a video on the list or whether to keep every record for every video. I think a good examination for this would be whether videos normally trend for consecutive days, or whether they appear and disappear repeatedly from the list.
+
+```{r}
+
+data %>% group_by(video_id) %>% summarise(first_day = min(trending_date), 
+                                          last_day = max(trending_date),
+                                          days_range = as.numeric(difftime(last_day ,first_day , units = c("days")))+1,
+                                          total_days = n(),
+                                          consecutive_ratio = total_days / days_range) %>%
+    ggplot() + geom_histogram(aes(x=consecutive_ratio), bins=12) +coord_cartesian(xlim=c(0,1))
+```
+From this graph, it is clear to see that the vast majority of the videos that trend for multiple days do so consecutively, or nearly consecutively. I think the majority of my analysis should be done on just the first time a video trends, since that is the real cutoff point. Doing most of the analysis on the full data set would lead to overrepresentation of multi-trenders. 
 
 
 

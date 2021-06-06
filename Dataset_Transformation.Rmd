@@ -66,12 +66,28 @@ data$comments_disabled = as.logical(data$comments_disabled)
 data$ratings_disabled = as.logical(data$ratings_disabled)
 ```
 
+Get rid of the double- entries for the two days in the middle of the dataset that were duped, and the most recent few days that had inconsistent/possibly duped data.
+The testing for all this code is in the Exploratory Data Analysis RNotebook
+```{r}
+good_rows_feb24 = data %>% filter(as.Date(trending_date) == as.Date('2021-02-24')) %>%group_by(video_id) %>% .[!duplicated(.$video_id), ]
+
+good_rows_mar2 = data %>% filter(as.Date(trending_date) == as.Date('2021-03-02')) %>%group_by(video_id) %>% .[!duplicated(.$video_id), ]
+
+data_ex_duped_dates = filter(data, as.Date(trending_date) != as.Date('2021-02-24') & as.Date(trending_date) != as.Date('2021-03-02') & as.Date(trending_date) < '2021-05-31')
+
+data_clean = ungroup(rbind(good_rows_feb24, good_rows_mar2, data_ex_duped_dates))
+
+
+#This got rid of 1,391 rows. If things went perfectly, it would have been 1,400 rows. 
+cat('Got rid of', dim(data)[1] - dim(data_clean)[1],'rows. If things went perfectly, it would have been 1,400 rows.')
+
+```
 
 
 
 save my data as my working dataset.
 ```{r}
-write.csv(data, 'data\\Youtube_Working_Dataset.csv', row.names=FALSE)
+write.csv(data_clean, 'data\\Youtube_Working_Dataset.csv', row.names=FALSE)
 ```
 
 
