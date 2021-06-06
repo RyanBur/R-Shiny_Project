@@ -75,7 +75,7 @@ good_rows_mar2 = data %>% filter(as.Date(trending_date) == as.Date('2021-03-02')
 
 data_ex_duped_dates = filter(data, as.Date(trending_date) != as.Date('2021-02-24') & as.Date(trending_date) != as.Date('2021-03-02') & as.Date(trending_date) < '2021-05-31')
 
-data_clean = ungroup(rbind(good_rows_feb24, good_rows_mar2, data_ex_duped_dates))
+data_clean = ungroup(rbind(good_rows_feb24, good_rows_mar2, data_ex_duped_dates)) %>% arrange(trending_date)
 
 
 #This got rid of 1,391 rows. If things went perfectly, it would have been 1,400 rows. 

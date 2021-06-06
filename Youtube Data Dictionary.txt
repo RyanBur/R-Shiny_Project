@@ -9,6 +9,8 @@ category_text - Used the information in the associated .json file to convert cat
 
 publish_to_trending_days - The amount of time, in days, between the publishing timestamp and midnight (one minute before 12:00AM) the day of the trending video record. A time of 0 indicates the video was published on the same day as the video hit the daily trending list.
 
+top_tags - the most popular tag for a video from the original 'tags' column. Most popular means it was the tag listed for the video that showed up most frequently across all the entries in the whole dataset. Processing for this done in a jupyter notebook in Python.
+
 
 ===================================================================================
 **RAW DATA INFORMATION**
