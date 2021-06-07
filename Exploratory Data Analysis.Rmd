@@ -432,7 +432,13 @@ tags_aggregates %>% arrange(desc(median_views)) %>% head(20) %>%
 tags_aggregates %>% arrange(desc(median_views)) %>% tail(20) %>% 
     ggplot() + geom_col(aes(x=reorder(top_tag, median_views), y=median_views)) + coord_flip()
 ```
+relationship between median views for a tag and how many times it was used for a video?
 
+```{r}
+data %>% group_by(top_tag) %>% summarise(occurrences=n(), median_views=median(view_count)) %>%
+    ggplot() + geom_point(aes(x=occurrences, y=median_views), alpha=0.4) +coord_cartesian(xlim=c(0,1000))
+```
+Not sure what to conclude.
 
 Tags creation to trending timeframe
 ```{r}
