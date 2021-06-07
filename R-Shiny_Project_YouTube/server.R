@@ -70,6 +70,112 @@ function(input, output, session) {
             consec_trending_text
         }
     })
+    
+    # For Analysis - Title Length
+    output$title_table <- renderTable(title_table)
+    
+    # For Analysis - Title Length
+    output$title_length_histogram <- renderPlot({
+        title_length_histogram
+    })
+    
+    
+    # For Analysis - Title Words
+    output$title_words_table <- renderTable(title_words_table)
+    
+    # For Analysis - Title Words
+    output$title_words_density_plot <- renderPlot({
+        title_words_density_plot
+    })
+    
+    # For Analysis - Title Caps Ratio
+    output$title_caps_table <- renderTable(title_caps_table)
+    
+    # For Analysis - Title Caps Ratio
+    output$caps_ratio_histogram <- renderPlot({
+        caps_ratio_histogram
+    })
+    
+    
+    # For Analysis - Channel Length
+    output$channel_length_table <- renderTable(channel_length_table)
+    
+    # For Analysis - Channel Length
+    output$channel_length_density_plot <- renderPlot({
+        channel_length_density_plot
+    })
+    
+    
+    # For Analysis - Channel Words
+    output$channel_words_table <- renderTable(channel_words_table)
+    
+    # For Analysis - Channel Words
+    output$channel_words_bar_plot <- renderPlot({
+        channel_words_bar_plot
+    })
+    
+    ############################
+    
+    # For Analysis - Categories stats
+    output$categories_appearance_plot <- renderPlot({
+        categories_appearance_plot
+    })
+    
+    # For Analysis - Categories stats
+    output$categories_views_plot <- renderPlot({
+        categories_views_plot
+    })
+    
+    # For Analysis - Categories stats
+    output$categories_likes_plot <- renderPlot({
+        categories_likes_plot
+    })
+    
+    # For Analysis - Categories stats
+    output$categories_comments_plot <- renderPlot({
+        categories_comments_plot
+    })
+    
+    #############################
+    
+    # For Analysis - Categories Timeline
+    output$cats_time_to_trending_plot <- renderPlot({
+        cats_time_to_trending_plot
+    })
+    
+    # For Analysis - Categories Timeline
+    output$cats_days_trending_plot <- renderPlot({
+        cats_days_trending_plot
+    })
+    
+    output$cats_list = renderText({
+        input$CatsCheckBoxes
+    })
+    
+    
+    
+    # For Analysis - Tags Represented. This is my big one!
+    output$tags_represented_by_cat_plot <- renderPlot({
+        data %>% filter(category_text %in% input$CatsCheckBoxes) %>% 
+            group_by(top_tag) %>% 
+            summarise(count=n()) %>%
+            arrange(desc(count)) %>% 
+            head(15) %>% 
+            ggplot() + geom_col(aes(x=reorder(top_tag, count), y=count)) + coord_flip()
+    })
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }
 
 

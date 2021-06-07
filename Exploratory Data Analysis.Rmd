@@ -284,6 +284,7 @@ Channel Length:
 ```{r}
 data %>% mutate(channel_length=nchar(channelTitle)) %>% 
     ggplot() + geom_histogram(aes(x=channel_length), bins=20)
+
 data %>% mutate(channel_length=nchar(channelTitle)) %>% summarise(longest_channel=max(channel_length), shortest_channel=min(channel_length))
 
 
@@ -308,7 +309,7 @@ data %>% mutate(channel_word_count=sapply(channelTitle, 'word_count', USE.NAMES 
     ggplot() + geom_bar(aes(x=channel_word_count)) 
 
 
-data %>% mutate(channel_word_count=sapply(channelTitle, 'word_count', USE.NAMES = FALSE)) %>% summarise(median_channel_words=median(channel_word_count), avg_channel_words=mean(channel_word_count), stdev_channel_words=sd(channel_word_count))
+data %>% mutate(channel_word_count=sapply(channelTitle, 'word_count', USE.NAMES = FALSE)) %>% summarise(median_channel_words=median(channel_word_count), avg_channel_words=mean(channel_word_count), stdev_channel_words=sd(channel_word_count), longest_channel=max(channel_word_count))
 ```
 
 
@@ -352,6 +353,7 @@ category_aggregates %>%
 Try to put these three charts side by side for comparison:
 ```{r}
 ggplot(category_aggregates, aes(x=reorder(category_text, count))) + geom_col(aes(y=count)) + coord_flip()
+
 ```
 
 Median views per category bar chart sorted by frequency of category on trending list:
@@ -431,7 +433,7 @@ Tags to median views required to make the list (dont need comments, likes)
 ```{r}
 tags_aggregates = data %>% group_by(top_tag) %>% summarise( count=n(), median_views=median(view_count), avg_days_to_trend=mean(publish_to_trending_days), average_days_trending=n()/length(unique(video_id)))
 
-tags_aggregates %>% ggplot() + geom_histogram(aes(x=median_views), bins=200) + coord_cartesian(xlim=c(0,10000000))
+tags_aggregates %>% ggplot() + geom_histogram(aes(x=log(median_views)), bins=200) #+ coord_cartesian(xlim=c(0,10000000))
 
 tags_aggregates %>% arrange(desc(median_views)) %>% head(20) %>% 
     ggplot() + geom_col(aes(x=reorder(top_tag, median_views), y=median_views)) + coord_flip()

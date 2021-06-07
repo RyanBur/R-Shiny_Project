@@ -47,3 +47,7 @@ vignettes/*.pdf
 *.nb.html   
 
 *.ipynb_checkpoints*
+
+#Images
+*.png
+*.jpg
