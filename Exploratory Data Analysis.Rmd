@@ -312,24 +312,154 @@ Will look at category proportions, category vs. views, and category vs comments.
 ggplot(data) + geom_bar(aes(x=reorder(category_text, category_text, function(x) length(x)))) + coord_flip()
 ```
 
-Now, category by average likes:
+Now, create a df with the aggregated likes/comments values I will be using.
 ```{r}
 
+category_aggregates = data %>% group_by(category_text) %>% summarise(count=n(), avg_likes=mean(likes), median_likes=median(likes), avg_comments=mean(comment_count), median_comments=median(comment_count), avg_views=mean(view_count), median_views=median(view_count))
+
+category_aggregates
+    
+    
+```
+
+Graph median views for categories:
+```{r}
+category_aggregates %>%
+    ggplot() + geom_col(aes(x=reorder(category_text, median_views), y=median_views)) + coord_flip()
 
 ```
 
 
+Graph median likes for categories:
+```{r}
+category_aggregates %>%
+    ggplot() + geom_col(aes(x=reorder(category_text, median_likes), y=median_likes)) + coord_flip()
+
+```
+Graph median comment_count for categories
+```{r}
+category_aggregates %>% 
+    ggplot() + geom_col(aes(x=reorder(category_text, median_comments), y=median_comments)) + coord_flip()
+```
+
+Try to put these three charts side by side for comparison:
+```{r}
+ggplot(category_aggregates, aes(x=reorder(category_text, count))) + geom_col(aes(y=count)) + coord_flip()
+```
+
+Median views per category bar chart sorted by frequency of category on trending list:
+```{r}
+ggplot(category_aggregates, aes(x=reorder(category_text, count))) + geom_col(aes(y=median_views)) + coord_flip()
+```
+
+Median likes per category bar chart sorted by frequency of category on trending list:
+```{r}
+ggplot(category_aggregates, aes(x=reorder(category_text, count))) + geom_col(aes(y=median_likes)) + coord_flip()
+```
+
+Median comment_count per category bar chart sorted by frequency of category on trending list:
+```{r}
+ggplot(category_aggregates, aes(x=reorder(category_text, count))) + geom_col(aes(y=median_comments)) + coord_flip()
+```
+Rough measure of the most durable categories, how long from creation to trending on average.
+```{r}
+data %>% group_by(category_text) %>% summarise(avg_days_to_trending = mean(publish_to_trending_days)) %>%
+    ggplot() + geom_col(aes(x=reorder(category_text, avg_days_to_trending), y=avg_days_to_trending)) + coord_flip()
+
+```
+
+Another rough measure of the most durable categories, how many days videos trend for on average
+```{r}
+data %>% group_by(category_text, video_id) %>% summarise(days_trending=n()) %>% summarise(avg_days_trending=mean(days_trending)) %>%
+    ggplot() + geom_col(aes(x=reorder(category_text, avg_days_trending), y=avg_days_trending)) + coord_flip()
+```
+Very surprised that the two above charts didnt show larger deviations. I would have thought categories like sports and news that are very timely would have very short timeframes, whereas videos like music and entertainment that are more durable (don't have a built in expiration date) would have lasted longer. That is evident, but not nearly in the amount i'd think.
+
+Clearly, even though there are lots more music and entertainment vidoes on the trending list, it is harder to make the list (in terms of views) in the over-represented categories. My guess are those are the categories where videos get the most likes overall (this data tells nothing about that). If your goal is just to make the list, you'd want to be in the underrepresented categories (less views to be included), but it is likely much harder to get large numbers of views in those categories. 
+
+NOTE: Categories info is useful to compare to views and comments because it gives an estimate of how many views/likes/comments are needed to get on the list, in the average publish-to-trending timeframe, for each category.
 
 
+Okay, Done with category. Moving on to... top tags. Yikes.
 
 
+Tags appearance statistics.
+```{r}
+cat('There are', length(unique(data$top_tag)), 'unique top_tags in the dataset')
+
+tags_counts = data %>% group_by(top_tag) %>% summarise(count=n()) %>% arrange(desc(count))
+tags_counts
+
+data %>% filter(top_tag=='[none]') %>% summarise(median_views_tagless=median(view_count), avg_days_trending_tagless=(n()/length(unique(video_id))))
+
+data %>% filter(top_tag!='[none]') %>% summarise(median_views_tagged=median(view_count), avg_days_trending_tagged=(n()/length(unique(video_id))))
+
+```
+Interesting, there is hardly any difference in performance metrics for tagged vs. untagged. But I think the more relevant metric is that untagged videos only make up 7,300 of 56,000 trending videos. Clearly, tag your videos.
 
 
+Top tags
+```{r}
+tags_counts %>% head(20)
+tags_counts %>% tail(20)
+
+dim(tags_counts %>% filter(count==1))[1]
+```
+The top tags are pretty general words, which you'd expect, but they still in many cases tell more about the videos in question than the categories. I bet it combines pretty well with the category_text to give you more info about a video.
+
+Interestingly, there are still 34 tags in the database that, despite being the most popular tag for the video in question, were unique to that video. No other trending video in the 280 day period used the tag.
 
 
+Top 5 tags by category
+Creating this chart once instead of 15 times (the facet wrap looked BAAAAAAD), below are all the categories to plug into the code.
+"Film & Animation"    "Autos & Vehicles"    "Music"   "Pets & Animals"   "Sports"                "Travel & Events"      "Gaming"                "People & Blogs"        "Comedy"               "Entertainment"         "News & Politics"       "Howto & Style"        "Education"             "Science & Technology"  "Nonprofits & Activism"
+```{r}
+data %>% group_by(category_text, top_tag) %>% summarise(count=n()) %>% arrange(category_text, desc(count)) %>% slice(1:10) %>% filter(category_text=='Autos & Vehicles') %>%
+    ggplot() + geom_col(aes(x=reorder(top_tag, count), y=count)) + coord_flip()
+
+```
 
 
+Tags to median views required to make the list (dont need comments, likes)
+```{r}
+tags_aggregates = data %>% group_by(top_tag) %>% summarise( count=n(), median_views=median(view_count), avg_days_to_trend=mean(publish_to_trending_days), average_days_trending=n()/length(unique(video_id)))
 
+tags_aggregates %>% ggplot() + geom_histogram(aes(x=median_views), bins=200) + coord_cartesian(xlim=c(0,10000000))
+
+tags_aggregates %>% arrange(desc(median_views)) %>% head(20) %>% 
+    ggplot() + geom_col(aes(x=reorder(top_tag, median_views), y=median_views)) + coord_flip()
+
+tags_aggregates %>% arrange(desc(median_views)) %>% tail(20) %>% 
+    ggplot() + geom_col(aes(x=reorder(top_tag, median_views), y=median_views)) + coord_flip()
+```
+
+
+Tags creation to trending timeframe
+```{r}
+tags_aggregates %>% ggplot() + geom_histogram(aes(x=avg_days_to_trend), bins=100) +coord_cartesian(xlim=c(0,10))
+
+
+tags_aggregates %>% arrange(desc(avg_days_to_trend)) %>% head(20) %>% 
+    ggplot() + geom_col(aes(x=reorder(top_tag, avg_days_to_trend), y=avg_days_to_trend)) + coord_flip()
+
+tags_aggregates %>% arrange(desc(avg_days_to_trend)) %>% tail(20) %>% 
+    ggplot() + geom_col(aes(x=reorder(top_tag, avg_days_to_trend), y=avg_days_to_trend)) + coord_flip()
+```
+
+
+Tags average days trending
+```{r}
+tags_aggregates %>% ggplot() + geom_histogram(aes(x=average_days_trending), bins=15) 
+
+
+tags_aggregates %>% arrange(desc(average_days_trending)) %>% head(20) %>% 
+    ggplot() + geom_col(aes(x=reorder(top_tag, average_days_trending), y=average_days_trending)) + coord_flip()
+
+tags_aggregates %>% arrange(desc(average_days_trending)) %>% tail(20) %>% 
+    ggplot() + geom_col(aes(x=reorder(top_tag, average_days_trending), y=average_days_trending)) + coord_flip()
+```
+
+Okay, I think that about sums it up for EDA. Now to decide what to show for my project and start building the RShiny app!
 
 
 
