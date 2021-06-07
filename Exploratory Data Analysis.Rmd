@@ -53,7 +53,9 @@ Plot the frequency of trending days. I want to see what is a common amount of ti
 trend_days_count = data %>% count(video_id) %>% arrange(desc(n))
 trend_days_proportions = data %>% count(video_id) %>% count(n) %>% mutate(proportion=round(nn/unique_vids,3)) %>% select(n, proportion) 
 
-trend_days_proportions %>% ggplot() + geom_col(aes(x=n, y=proportion))
+trend_days_proportions %>% ggplot() + geom_col(aes(x=n, y=proportion), fill='darkgoldenrod4') + coord_cartesian(xlim=c(0,15)) + labs(title='Days Spent Trending Per Video', x='Number of Days Trended', y='Proportion of Trending Records')  + theme_bw()  + theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid"), axis.title=element_text(size=12))
+
+
 cat('Standard Deviation of days trending:', sd(trend_days_count$n), '\n')
 cat('Mean days trending:', mean(trend_days_count$n), '\n')
 cat('Median days trending:', median(trend_days_count$n), '\n')
@@ -64,6 +66,11 @@ Different line of questioning: How many creators got multiple videos on the tren
 vids_per_creator = data %>% group_by(channelId) %>% 
     summarise(number_trending_videos=n_distinct(video_id))
 creator_count = dim(vids_per_creator)[1]
+
+
+vids_per_creator %>% group_by(number_trending_videos) %>% summarise(proportion=n()/creator_count) %>% ggplot() + geom_col(aes(x=number_trending_videos, y=proportion))
+
+
 cat('Number of creators who made the top daily trending list in 283 days:', creator_count, '\n')
 cat('Number of creators who had more than one video make the top trending list:',
     dim(vids_per_creator[vids_per_creator$number_trending_videos > 1,])[1], '\n')
@@ -93,7 +100,7 @@ ggplot(data) + geom_histogram(aes(x=view_count), bins=6000) + coord_cartesian(xl
 # Shows the log-views distribution
 ggplot(data) + geom_histogram(aes(x=log(view_count)), bins=100) 
 
-ggplot(data) + geom_histogram(aes(x=log(view_count, base=10)), bins=100) 
+ggplot(data) + geom_density(aes(x=log(view_count, base=10))) 
 
 ```
 
@@ -123,7 +130,7 @@ ggplot(data_with_ratings) + geom_histogram(aes(x=likes), bins=6000) + coord_cart
 # Shows the log-likes distribution
 ggplot(data_with_ratings) + geom_histogram(aes(x=log(likes)), bins=100) 
 
-ggplot(data_with_ratings) + geom_histogram(aes(x=log(likes, base=10)), bins=100) 
+ggplot(data_with_ratings) + geom_density(aes(x=log(likes, base=10))) 
 
 ```
 
@@ -152,7 +159,7 @@ ggplot(data_with_ratings) + geom_histogram(aes(x=dislikes), bins=10000) + coord_
 # Shows the log-dislikes distribution
 ggplot(data_with_ratings) + geom_histogram(aes(x=log(dislikes)), bins=100) 
 
-ggplot(data_with_ratings) + geom_histogram(aes(x=log(dislikes, base=10)), bins=100) 
+ggplot(data_with_ratings) + geom_density(aes(x=log(dislikes, base=10))) 
 
 ```
 
@@ -181,7 +188,7 @@ ggplot(data_with_comments) + geom_histogram(aes(x=comment_count), bins=20000) + 
 # Shows the log-comment count distribution
 ggplot(data_with_comments) + geom_histogram(aes(x=log(comment_count)), bins=100) 
 
-ggplot(data_with_comments) + geom_histogram(aes(x=log(comment_count, base=10)), bins=100) 
+ggplot(data_with_comments) + geom_density(aes(x=log(comment_count, base=10))) 
 
 ```
 
