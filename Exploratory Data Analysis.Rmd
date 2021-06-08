@@ -7,7 +7,6 @@ library(dplyr)
 library(ggplot2)
 library(stringr)
 ```
-
 This notebook will focus on Exploratory Data Analysis to help understand my data more and see emerging areas of trends and relationships. 
 Load in the processed data:
 ```{r}

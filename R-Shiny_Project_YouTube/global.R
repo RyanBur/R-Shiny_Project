@@ -9,16 +9,27 @@ library(shinythemes)
 data = read.csv('data\\Youtube_Working_Dataset_Shiny.csv', header=TRUE)
 
 
-## Info for the Introduction Page
+## Info for the Basic Stats Page ##
 
-intro_text = "This is the intro text I will be using. It will be long and formatted, so I want
-to include it in this section and not fill up my server window. Lets see if this works like I am hoping. This
-should have all been one long line.
-\n New Line.
-\n New Line Two."
+records_count = dim(data)[1]
+unique_vids = dim(distinct(data, video_id))[1]
+avg_days_trending = round(records_count/unique_vids,2)
+#200 entries per day
+single_trend_vids = unique_vids - dim(data %>% count(video_id) %>% arrange(desc(n)) %>% filter(n>1))[1]
+first_day = min(data$trending_date)
+last_day = max(data$trending_date)
+days_covered = length(unique(data$trending_date))
+unique_creators = dim(data %>% group_by(channelId) %>% 
+    summarise(number_trending_videos=n_distinct(video_id)))[1]
 
+basics_labels = c('Number of Records', 'Records per Day', 'Unique Videos', 
+                  'UniqueCreators', 'Avg Days Trending per Video', 'Videos with One Trending Day', 
+                  'Start Date', 'End Date', 'Days Covered')
 
+basics_values = c(records_count, 200, unique_vids, unique_creators, avg_days_trending, 
+                  single_trend_vids, first_day, last_day, days_covered)
 
+basics_table = data.frame(Field=basics_labels, Value=basics_values)
 
 
 
@@ -36,7 +47,7 @@ should have all been one long line.
 ## Plots / Info for Graphical Description ##
 
 # Histogram for Days Trending
-unique_vids = dim(distinct(data, video_id))[1]
+
 trend_days_count = data %>% count(video_id) %>% arrange(desc(n))
 trend_days_proportions = data %>% count(video_id) %>% count(n) %>% mutate(proportion=round(nn/unique_vids,3)) %>% select(n, proportion) 
 
@@ -46,10 +57,12 @@ days_trending_hist = trend_days_proportions %>% ggplot() +
     labs(title='Days Spent Trending Per Video', x='Number of Days Trended', y='Proportion of Trending Records')  + 
     theme_bw()  + 
     theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
-          panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid"), 
            axis.title=element_text(size=12))
 
-days_trending_text = "Placeholder for Days Trending Text"
+days_trending_text = "Most of the videos in the dataset stayed on the trending list for 4-8 days, 
+with a median time of 6 days. There were some rare large outliers, the longest video having trended 
+for 33 days. Interestingly, once a video made the trending list it tended to stay on it. Only 3.8% 
+of videos on the list trended for a single day."
 
 # Videos Per Creator Bar Graph
 vids_per_creator = data %>% group_by(channelId) %>% 
@@ -57,43 +70,61 @@ vids_per_creator = data %>% group_by(channelId) %>%
 creator_count = dim(vids_per_creator)[1]
 
 vids_per_creator_bar = vids_per_creator %>% group_by(number_trending_videos) %>% summarise(proportion=n()/creator_count) %>% 
-    ggplot() + geom_col(aes(x=number_trending_videos, y=proportion)) + 
+    ggplot() + geom_col(aes(x=number_trending_videos, y=proportion), fill='darkgoldenrod4') + 
     coord_cartesian(xlim=c(0,30)) + 
     labs(title='Number of Videos Per Creator', x='Number of Videos per creator', y='Proportion of Trending Records')  + 
     theme_bw()  + 
     theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
-          panel.background = element_rect(fill = "lightblue", colour = "lightblue", size = 0.5, linetype = "solid"), 
           axis.title=element_text(size=12))
 
-vids_per_creator_text = "Placeholder for vids per creator text"
+vids_per_creator_text = "Half of all creators on the list only had one video make it in the 280 days covered
+by the data. Very few creators made the list more than 10 times in the 280 days covered."
 
 # Views Count Histogram
 views_density_log_plot = ggplot(data) + geom_density(aes(x=log(view_count, base=10)),
-                                                         color='darkblue', fill='lightblue') #deleted , bins=100
+                                                         color='darkblue', fill='lightblue') + 
+    theme_bw() + theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+                       axis.title=element_text(size=12)) + 
+    labs(title='Density Curve of log(10) Views Per Video', x='log(10)-View Count', y='Density')
 
-views_density_text = "placeholder for views text"
+views_density_text = "The distribution of views per video followed a log-normal distribution, with the 
+median video accumulating 1.14M views when making the list. Most videos had between 
+100k and 10M views when making the list."
 
 # Likes Density Plot
 data_with_ratings = data %>% filter(ratings_disabled==FALSE)
 
 likes_density_log_plot = ggplot(data_with_ratings) + geom_density(aes(x=log(likes, base=10)), 
-                                                                  color='darkblue', fill='lightblue')
+                                                                  color='darkblue', fill='lightblue') + 
+    theme_bw() + theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+                       axis.title=element_text(size=12)) + 
+    labs(title='Density Curve of log(10) Likes Per Video', x='log(10)-Like Count', y='Density')
 
-likes_density_text = "Placeholder for likes density text"
+likes_density_text = "Likes per video also exhibited a log-normal distribution, 
+with a median value of about 53,700 likes."
 
 # Dislikes Density Plot
 dislikes_density_log_plot = ggplot(data_with_ratings) + geom_density(aes(x=log(dislikes, base=10)), 
-                                                                     color='darkblue', fill='lightblue') 
+                                                                     color='darkblue', fill='lightblue') + 
+    theme_bw() + theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+                       axis.title=element_text(size=12)) + 
+    labs(title='Density Curve of log(10) Dislikes Per Video', x='log(10)-Dislike Count', y='Density')
 
-dislikes_density_text = "Placeholder for dislikes text"
+dislikes_density_text = "Dislikes per video also exhibited a log-normal distribution, 
+with a median value of about 930 dislikes. It is interesting to see likes outnumber 
+dislikes by an order of mangitude."
 
 # Comments Density Plot
 data_with_comments = data %>% filter(comments_disabled==FALSE)
 
 comments_density_log_plot = ggplot(data_with_comments) + geom_density(aes(x=log(comment_count, base=10)), 
-                                                                      color='darkblue', fill='lightblue') 
+                                                                      color='darkblue', fill='lightblue')  + 
+    theme_bw() + theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+                       axis.title=element_text(size=12)) + 
+    labs(title='Density Curve of log(10) Comments Per Video', x='log(10)-Comment Count', y='Density') 
 
-comments_density_text = "Placeholder for comments text"
+comments_density_text = "The number of comments a video had received when it made the Trending list 
+exhibited a log-normal distribution as well, with a median value of 4,500 comments."
 
 # Measure of Consecutiveness of trending days
 consec_trending_histogram = data %>% group_by(video_id) %>% summarise(first_day = min(trending_date), 
@@ -101,9 +132,16 @@ consec_trending_histogram = data %>% group_by(video_id) %>% summarise(first_day 
                                           days_range = as.numeric(difftime(last_day ,first_day , units = c("days")))+1, 
                                           total_days = n(),
                                           consecutive_ratio = total_days / days_range) %>%
-    ggplot() + geom_histogram(aes(x=consecutive_ratio), bins=12) +coord_cartesian(xlim=c(1,0))
+    ggplot() + geom_histogram(aes(x=consecutive_ratio), fill='darkgoldenrod4', bins=12) +coord_cartesian(xlim=c(1,0))  + 
+    labs(title='Consecutiveness of Trending Days Per Video', x='Days Trended / (Last Trending Date - First Trending Date)', y='Count')  + 
+    theme_bw()  + 
+    theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+          axis.title=element_text(size=12))
 
-consec_trending_text = "Placeholder for consecutiveness text"
+consec_trending_text = "This ratio represents the 'consecutiveness' of a video's trending. 
+It is the ratio of days a video trended for divided by the days spenning entry to and ultimate exit 
+from the list. This shows that, in general, a video doesn't make the trending list again after 
+having fallen off for a few days."
 
 
 
@@ -131,7 +169,11 @@ title_table = data.frame(Field=title_table_labels, Value=title_table_values)
 
 # Creating the histogram of title length
 title_length_histogram = data %>% mutate(title_length=nchar(title)) %>% 
-    ggplot() + geom_histogram(aes(x=title_length), bins=36)
+    ggplot() + geom_histogram(aes(x=title_length), fill='darkgoldenrod4', bins=36) + 
+    labs(title='Frequency of Video Title Length', x='Title Length (in Characters)', y='Count')  + 
+    theme_bw()  + 
+    theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+          axis.title=element_text(size=12))
 
 
 
@@ -155,7 +197,10 @@ title_words_table = data.frame(Field = titlew_labels, Value=titlew_values)
 
 # Density plot of title word count
 title_words_density_plot = data %>% mutate(title_word_count=sapply(title, 'word_count', USE.NAMES = FALSE)) %>%
-    ggplot() + geom_density(aes(x=title_word_count), fill='lightblue', adjust=1.7, alpha=.3)
+    ggplot() + geom_density(aes(x=title_word_count), fill='lightblue', adjust=1.7, alpha=.3) + 
+    theme_bw() + theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+                       axis.title=element_text(size=12)) + 
+    labs(title='Density Curve of Word Count in Video Title', x='Title Word Count', y='Density')
 
 
 
@@ -173,7 +218,11 @@ title_caps_table = data.frame(Field = c('1st Quartile', 'Median Caps Ratio', 'Me
 
 caps_ratio_histogram = data %>% mutate(title_caps_ratio = str_count(title, "[A-Z]") / 
                     (str_count(title, "[A-Z]") + str_count(title, "[a-z]"))) %>% 
-    ggplot() + geom_histogram(aes(x=title_caps_ratio), bins=20)
+    ggplot() + geom_histogram(aes(x=title_caps_ratio), fill='darkgoldenrod4', bins=20) + 
+    labs(title='Capital Letters Ratio in Video Title', x='Ratio: Capital Letter Count / All Letters Count', y='Count')  + 
+    theme_bw()  + 
+    theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+          axis.title=element_text(size=12))
 
 
 #########################################################################################################
@@ -199,7 +248,10 @@ channel_length_table = data.frame(Field=channel_length_labels, Characters=channe
 
 # Creating a density plot
 channel_length_density_plot = data %>% mutate(channel_length=nchar(channelTitle)) %>% 
-    ggplot() + geom_density(aes(x=channel_length), fill='lightblue', adjust=2, alpha=.3) + theme_bw()
+    ggplot() + geom_density(aes(x=channel_length), fill='lightblue', adjust=2, alpha=.3) + 
+    theme_bw() + theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+                       axis.title=element_text(size=12)) + 
+    labs(title='Density Curve of Channel Title Length', x='Channel Title Length, in Characters', y='Density')
 
 
 ## Plots / Info for Channel Title Words Analysis ##
@@ -227,7 +279,11 @@ channel_words_table = data.frame(Field=channel_words_labels, Words=channel_words
 
 # Creating a density plot
 channel_words_bar_plot = data %>% mutate(channel_word_count=sapply(channelTitle, 'word_count', USE.NAMES = FALSE)) %>%
-    ggplot() + geom_bar(aes(x=channel_word_count)) 
+    ggplot() + geom_bar(aes(x=channel_word_count), fill='darkgoldenrod4') + 
+    labs(title='Channel Title Word Count', x='Word Count for Channel Title', y='Count')  + 
+    theme_bw()  + 
+    theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+          axis.title=element_text(size=12))
 
 
 
@@ -240,27 +296,51 @@ category_aggregates = data %>% group_by(category_text) %>%
               median_comments=median(comment_count), avg_views=mean(view_count), median_views=median(view_count))
 
 # Category appearances plot
-categories_appearance_plot = ggplot(category_aggregates, aes(x=reorder(category_text, proportion))) + geom_col(aes(y=proportion)) + coord_flip()
+categories_appearance_plot = ggplot(category_aggregates, aes(x=reorder(category_text, proportion))) + geom_col(aes(y=proportion), fill='darkgoldenrod4') + coord_flip() + 
+    labs(title='Categories by Proportion of Appearance', x='Category', y='Proportion')  + 
+    theme_bw()  + 
+    theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+          axis.title=element_text(size=12), axis.title.y = element_blank(), axis.text.y = element_text(size=12))
 
 # Category Views plot
-categories_views_plot = ggplot(category_aggregates, aes(x=reorder(category_text, proportion))) + geom_col(aes(y=median_views)) + coord_flip()
+categories_views_plot = ggplot(category_aggregates, aes(x=reorder(category_text, proportion))) + geom_col(aes(y=median_views), fill='darkgoldenrod4') + coord_flip() + 
+    labs(title='Categories by Median Views', x='Category', y='Median Views')  + 
+    theme_bw()  + 
+    theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+          axis.title=element_text(size=12), axis.title.y = element_blank(), axis.text.y = element_text(size=12))
 
 # Category Likes Plot
-categories_likes_plot = ggplot(category_aggregates, aes(x=reorder(category_text, proportion))) + geom_col(aes(y=median_likes)) + coord_flip()
+categories_likes_plot = ggplot(category_aggregates, aes(x=reorder(category_text, proportion))) + geom_col(aes(y=median_likes), fill='darkgoldenrod4') + coord_flip() + 
+    labs(title='Categories by Median Likes', x='Category', y='Median Likes')  + 
+    theme_bw()  + 
+    theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+          axis.title=element_text(size=12), axis.title.y = element_blank(), axis.text.y = element_text(size=12))
 
 # Category Comments plot
-categories_comments_plot = ggplot(category_aggregates, aes(x=reorder(category_text, proportion))) + geom_col(aes(y=median_comments)) + coord_flip()
+categories_comments_plot = ggplot(category_aggregates, aes(x=reorder(category_text, proportion))) + geom_col(aes(y=median_comments), fill='darkgoldenrod4') + coord_flip() + 
+    labs(title='Categories by Median Comment Count', x='Category', y='Comment Count')  + 
+    theme_bw()  + 
+    theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+          axis.title=element_text(size=12), axis.title.y = element_blank(), axis.text.y = element_text(size=12))
 
 
 
 
 # Categories by time from publishing to trending plot
 cats_time_to_trending_plot = data %>% group_by(category_text) %>% summarise(avg_days_to_trending = mean(publish_to_trending_days)) %>%
-    ggplot() + geom_col(aes(x=reorder(category_text, avg_days_to_trending), y=avg_days_to_trending)) + coord_flip()
+    ggplot() + geom_col(aes(x=reorder(category_text, avg_days_to_trending), y=avg_days_to_trending), fill='darkgoldenrod4') + coord_flip() + 
+    labs(title='Average Days From Publishing to Trending', x='Category', y='Days')  + 
+    theme_bw()  + 
+    theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+          axis.title=element_text(size=12), axis.title.y = element_blank(), axis.text.y = element_text(size=12))
 
 # Categories to days spent trending.
 cats_days_trending_plot = data %>% group_by(category_text, video_id) %>% summarise(days_trending=n()) %>% summarise(avg_days_trending=mean(days_trending)) %>%
-    ggplot() + geom_col(aes(x=reorder(category_text, avg_days_trending), y=avg_days_trending)) + coord_flip()
+    ggplot() + geom_col(aes(x=reorder(category_text, avg_days_trending), y=avg_days_trending), fill='darkgoldenrod4') + coord_flip() + 
+    labs(title='Average Days Spent Trending', x='Category', y='Days')  + 
+    theme_bw()  + 
+    theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+          axis.title=element_text(size=12), axis.title.y = element_blank(), axis.text.y = element_text(size=12))
 
 
 ####################################################################################

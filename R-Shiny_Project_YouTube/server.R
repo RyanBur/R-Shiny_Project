@@ -31,10 +31,13 @@ function(input, output, session) {
         DT::datatable(cars)
     })
     
-    output$intro_text = renderText({
-        intro_text
-    })
     
+    # For Basic Description
+    output$basics_table <- renderTable(basics_table)
+    
+    
+    
+    # For Graphical Description
     output$graphicalEDA_display = renderPlot({
         if (input$GraphEDA==1) {
             days_trending_hist
@@ -53,6 +56,7 @@ function(input, output, session) {
     }
     })
     
+    # For Graphical Description
     output$graphicalEDA_text = renderText({
         if (input$GraphEDA==1) {
             days_trending_text
@@ -161,7 +165,11 @@ function(input, output, session) {
             summarise(count=n()) %>%
             arrange(desc(count)) %>% 
             head(15) %>% 
-            ggplot() + geom_col(aes(x=reorder(top_tag, count), y=count)) + coord_flip()
+            ggplot() + geom_col(aes(x=reorder(top_tag, count), y=count), fill='darkgoldenrod4') + coord_flip() + 
+            labs(title='Top Tags for the Selected Categories', x='Tag', y='Tag Count')  + 
+            theme_bw()  + 
+            theme(plot.title = element_text(hjust = 0.5, size=14, face='bold'), 
+                  axis.title.y=element_blank(), axis.text.y = element_text(size=12))
     })
     
     

@@ -1,15 +1,39 @@
 **PROCESSED DATA INFORMATION**
 
-PublishedAt - Converted the character string in the raw dataset into a datetime object
+video_id - A unique ID for each video on YouTube
 
-trending_date - Converted the character string in the raw dataset into a datetime object
+title - The creator-chosen title for the video.
+
+channelid - Unique ID for the channel (aka user) who posted the video
+
+channelTitle - The user-chosen title for each channel
+
+PublishedAt - Time the video was published. Converted the character string in the raw dataset into a datetime object. 
+
+trending_date - The date for this record of a video being on the daily top trending list. A video can have multiple entries into the database, where each entry has a different trending_date. Converted the character string in the raw dataset into a datetime object.
+
+publish_to_trending_days - The amount of time, in days, between the publishing timestamp and midnight (one minute before 12:01AM) the day of the trending video record. A time of 0 indicates the video was published on the same day as the video hit the daily trending list.
 
 category_text - Used the information in the associated .json file to convert categoryId numbers to category descriptive text strings. This data is straight from Google.
+
+top_tag - The most popular tag for a video from the original 'tags' column. Most popular means it was the tag listed for the video that showed up most frequently across all the entries in the whole dataset. Processing for this done in a jupyter notebook in Python.
 
 
 publish_to_trending_days - The amount of time, in days, between the publishing timestamp and midnight (one minute before 12:00AM) the day of the trending video record. A time of 0 indicates the video was published on the same day as the video hit the daily trending list.
 
 top_tags - the most popular tag for a video from the original 'tags' column. Most popular means it was the tag listed for the video that showed up most frequently across all the entries in the whole dataset. Processing for this done in a jupyter notebook in Python.
+
+view_count - Total view count of the video as of the trending_date
+
+likes - Total like received by a video as of the trending_date
+
+dislikes - Total dislikes received by a video as of the trending_date
+
+comment_count - Total number of comments received by a video as of the trending_date
+
+comments_disabled - Boolean for whether or not the posting user disabled comments on a video
+
+ratings_disabled - Disables the likes and dislikes counts for a video. Can be set by the user posting the video.
 
 
 ===================================================================================
@@ -22,6 +46,8 @@ Dataset includes the daily trending YouTube videos for 8/11/20 - 6/2/21, spannin
 ------------------------------------------------------------------------------------
 Features:
 video_id - A unique ID for each video on YouTube
+
+title - The creator-chosen title for the video.
 
 publishedAt - Date and Timestamp for when the video was uploaded to Youtube
 
